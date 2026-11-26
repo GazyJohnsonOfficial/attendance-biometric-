@@ -1,0 +1,656 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API for the Class Attendance lecturer pilot
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: attendance
+    description: Lecturer attendance workspace
+paths:
+  /overview:
+    get:
+      operationId: getAttendanceOverview
+      tags: [attendance]
+      summary: Get lecturer dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceOverview"
+  /activity:
+    get:
+      operationId: getAttendanceActivity
+      tags: [attendance]
+      summary: Get recent lecturer activity
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+  /classes:
+    get:
+      operationId: listClasses
+      tags: [attendance]
+      summary: List lecturer classes
+      responses:
+        "200":
+          description: Classes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClassItem"
+    post:
+      operationId: createClass
+      tags: [attendance]
+      summary: Create a class
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClassInput"
+      responses:
+        "201":
+          description: Created class
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassItem"
+  /classes/{classId}:
+    parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getClass
+      tags: [attendance]
+      summary: Get class details
+      responses:
+        "200":
+          description: Class detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassDetail"
+        "404":
+          description: Class not found
+    patch:
+      operationId: updateClass
+      tags: [attendance]
+      summary: Update class details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClassUpdate"
+      responses:
+        "200":
+          description: Updated class
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassItem"
+  /classes/{classId}/roster:
+    parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getClassRoster
+      tags: [attendance]
+      summary: Get class roster and matching counts
+      responses:
+        "200":
+          description: Roster and counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RosterResponse"
+  /classes/{classId}/roster/preview:
+    parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: previewRoster
+      tags: [attendance]
+      summary: Validate and preview roster rows
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RosterPreviewInput"
+      responses:
+        "200":
+          description: Editable validation preview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RosterPreview"
+  /classes/{classId}/roster/commit:
+    parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: commitRoster
+      tags: [attendance]
+      summary: Save validated roster rows
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RosterCommitInput"
+      responses:
+        "200":
+          description: Saved roster
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RosterResponse"
+  /classes/{classId}/sessions:
+    parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: listClassSessions
+      tags: [attendance]
+      summary: List sessions for a class
+      responses:
+        "200":
+          description: Class sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SessionItem"
+    post:
+      operationId: createSession
+      tags: [attendance]
+      summary: Schedule or open a session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionInput"
+      responses:
+        "201":
+          description: Created session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionItem"
+  /sessions/{sessionId}:
+    parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getSession
+      tags: [attendance]
+      summary: Get a session and its attendance
+      responses:
+        "200":
+          description: Session detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionDetail"
+        "404":
+          description: Session not found
+  /sessions/{sessionId}/code:
+    parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getSessionCode
+      tags: [attendance]
+      summary: Get the current session code
+      responses:
+        "200":
+          description: Current code and rotation interval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionCode"
+  /sessions/{sessionId}/close:
+    parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: closeSession
+      tags: [attendance]
+      summary: Close a session to new check-ins
+      responses:
+        "200":
+          description: Closed session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionItem"
+  /sessions/{sessionId}/finalize:
+    parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: finalizeSession
+      tags: [attendance]
+      summary: Finalize and lock attendance
+      responses:
+        "200":
+          description: Finalized session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionDetail"
+  /sessions/{sessionId}/review-queue:
+    parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getReviewQueue
+      tags: [attendance]
+      summary: List attendance marks needing review
+      responses:
+        "200":
+          description: Review queue
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceRecord"
+  /sessions/{sessionId}/manual-mark:
+    parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createManualMark
+      tags: [attendance]
+      summary: Record a lecturer manual mark
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualMarkInput"
+      responses:
+        "201":
+          description: Manual attendance record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceRecord"
+  /records/{recordId}/decision:
+    parameters:
+      - name: recordId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: decideAttendanceRecord
+      tags: [attendance]
+      summary: Set a reviewed attendance decision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttendanceDecisionInput"
+      responses:
+        "200":
+          description: Updated attendance record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceRecord"
+  /classes/{classId}/reports/summary:
+    parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getClassReport
+      tags: [attendance]
+      summary: Get class attendance summary
+      responses:
+        "200":
+          description: Course attendance summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassReport"
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+components:
+  schemas:
+    AttendanceOverview:
+      type: object
+      required: [classCount, rosterCount, sessionsThisWeek, reviewCount, attendanceRate, attendanceByWeek, activeSessions]
+      properties:
+        classCount: { type: integer }
+        rosterCount: { type: integer }
+        sessionsThisWeek: { type: integer }
+        reviewCount: { type: integer }
+        attendanceRate: { type: number }
+        attendanceByWeek:
+          type: array
+          items: { $ref: "#/components/schemas/AttendanceWeek" }
+        activeSessions:
+          type: array
+          items: { $ref: "#/components/schemas/SessionItem" }
+    AttendanceWeek:
+      type: object
+      required: [week, attended, expected]
+      properties:
+        week: { type: string }
+        attended: { type: integer }
+        expected: { type: integer }
+    ActivityItem:
+      type: object
+      required: [id, action, detail, occurredAt, tone]
+      properties:
+        id: { type: string }
+        action: { type: string }
+        detail: { type: string }
+        occurredAt: { type: string, format: date-time }
+        tone: { type: string, enum: [neutral, success, warning] }
+    ClassInput:
+      type: object
+      required: [department, programme, level, courseCode, courseTitle, semester, academicYear]
+      properties:
+        department: { type: string, minLength: 1, maxLength: 120 }
+        programme: { type: string, minLength: 1, maxLength: 120 }
+        level: { type: integer, minimum: 100, maximum: 900 }
+        courseCode: { type: string, minLength: 1, maxLength: 30 }
+        courseTitle: { type: string, minLength: 1, maxLength: 160 }
+        semester: { type: string, minLength: 1, maxLength: 80 }
+        academicYear: { type: string, minLength: 1, maxLength: 30 }
+    ClassUpdate:
+      type: object
+      properties:
+        department: { type: string, minLength: 1, maxLength: 120 }
+        programme: { type: string, minLength: 1, maxLength: 120 }
+        level: { type: integer, minimum: 100, maximum: 900 }
+        courseCode: { type: string, minLength: 1, maxLength: 30 }
+        courseTitle: { type: string, minLength: 1, maxLength: 160 }
+        semester: { type: string, minLength: 1, maxLength: 80 }
+        academicYear: { type: string, minLength: 1, maxLength: 30 }
+    ClassItem:
+      type: object
+      required: [id, department, programme, level, courseCode, courseTitle, semester, academicYear, rosterCount, registeredCount, faceEnrolledCount, averageAttendance, lastSessionAt, createdAt]
+      properties:
+        id: { type: string }
+        department: { type: string }
+        programme: { type: string }
+        level: { type: integer }
+        courseCode: { type: string }
+        courseTitle: { type: string }
+        semester: { type: string }
+        academicYear: { type: string }
+        rosterCount: { type: integer }
+        registeredCount: { type: integer }
+        faceEnrolledCount: { type: integer }
+        averageAttendance: { type: number }
+        lastSessionAt: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+    ClassDetail:
+      type: object
+      required: [classroom, recentSessions]
+      properties:
+        classroom: { $ref: "#/components/schemas/ClassItem" }
+        recentSessions:
+          type: array
+          items: { $ref: "#/components/schemas/SessionItem" }
+    RosterRowInput:
+      type: object
+      required: [fullName, indexNumber, email]
+      properties:
+        fullName: { type: string, minLength: 2, maxLength: 100 }
+        indexNumber: { type: string, minLength: 1, maxLength: 32 }
+        email: { type: string, format: email }
+        phone: { type: ["string", "null"], maxLength: 32 }
+    RosterPreviewInput:
+      type: object
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/RosterPreviewRowInput" }
+    RosterPreviewRowInput:
+      type: object
+      required: [fullName, indexNumber, email]
+      properties:
+        fullName: { type: string, maxLength: 200 }
+        indexNumber: { type: string, maxLength: 64 }
+        email: { type: string, maxLength: 254 }
+        phone: { type: ["string", "null"], maxLength: 64 }
+    RosterCommitInput:
+      type: object
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/RosterRowInput" }
+    RosterPreviewRow:
+      type: object
+      required: [fullName, indexNumber, email, phone, status, issues]
+      properties:
+        fullName: { type: string }
+        indexNumber: { type: string }
+        email: { type: string }
+        phone: { type: ["string", "null"] }
+        status: { type: string, enum: [ready, error, conflict, invited] }
+        issues:
+          type: array
+          items: { type: string }
+    RosterPreview:
+      type: object
+      required: [totalRows, validRows, errorRows, conflictRows, rows]
+      properties:
+        totalRows: { type: integer }
+        validRows: { type: integer }
+        errorRows: { type: integer }
+        conflictRows: { type: integer }
+        rows:
+          type: array
+          items: { $ref: "#/components/schemas/RosterPreviewRow" }
+    RosterItem:
+      type: object
+      required: [id, fullName, indexNumber, email, phone, linkStatus, faceEnrolled]
+      properties:
+        id: { type: string }
+        fullName: { type: string }
+        indexNumber: { type: string }
+        email: { type: string }
+        phone: { type: ["string", "null"] }
+        linkStatus: { type: string, enum: [invited, matched, needs_approval, conflict] }
+        faceEnrolled: { type: boolean }
+    RosterResponse:
+      type: object
+      required: [rows, rosterCount, registeredCount, faceEnrolledCount]
+      properties:
+        rows:
+          type: array
+          items: { $ref: "#/components/schemas/RosterItem" }
+        rosterCount: { type: integer }
+        registeredCount: { type: integer }
+        faceEnrolledCount: { type: integer }
+    SessionInput:
+      type: object
+      required: [topic, startsAt, endsAt, venue, expectedStudents, codeMode, openImmediately]
+      properties:
+        topic: { type: string, maxLength: 160 }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        venue: { type: string, maxLength: 120 }
+        expectedStudents: { type: integer, minimum: 1, maximum: 1000 }
+        codeMode: { type: string, enum: [rotating, static] }
+        radiusM: { type: integer, minimum: 50, maximum: 500, default: 100 }
+        openImmediately: { type: boolean }
+    SessionItem:
+      type: object
+      required: [id, classId, topic, startsAt, endsAt, venue, expectedStudents, codeMode, radiusM, status, rosterCount, checkedInCount, reviewCount, createdAt]
+      properties:
+        id: { type: string }
+        classId: { type: string }
+        topic: { type: string }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        venue: { type: string }
+        expectedStudents: { type: integer }
+        codeMode: { type: string, enum: [rotating, static] }
+        radiusM: { type: integer }
+        status: { type: string, enum: [scheduled, open, closed, finalized] }
+        rosterCount: { type: integer }
+        checkedInCount: { type: integer }
+        reviewCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+    SessionDetail:
+      type: object
+      required: [session, records]
+      properties:
+        session: { $ref: "#/components/schemas/SessionItem" }
+        records:
+          type: array
+          items: { $ref: "#/components/schemas/AttendanceRecord" }
+    SessionCode:
+      type: object
+      required: [sessionId, code, qrPayload, mode, rotatesInSeconds, securityNotice]
+      properties:
+        sessionId: { type: string }
+        code: { type: string }
+        qrPayload: { type: string }
+        mode: { type: string, enum: [rotating, static] }
+        rotatesInSeconds: { type: integer }
+        securityNotice: { type: string }
+    AttendanceRecord:
+      type: object
+      required: [id, sessionId, studentName, indexNumber, status, markedAt, flags, note, markedManually]
+      properties:
+        id: { type: string }
+        sessionId: { type: string }
+        studentName: { type: string }
+        indexNumber: { type: string }
+        status: { type: string, enum: [present, needs_review, absent, excused] }
+        markedAt: { type: ["string", "null"], format: date-time }
+        flags:
+          type: array
+          items: { type: string }
+        note: { type: ["string", "null"] }
+        markedManually: { type: boolean }
+    AttendanceDecisionInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [present, absent, excused] }
+        note: { type: ["string", "null"], maxLength: 500 }
+    ManualMarkInput:
+      type: object
+      required: [indexNumber, status, reason]
+      properties:
+        indexNumber: { type: string, minLength: 1, maxLength: 32 }
+        status: { type: string, enum: [present, absent, excused] }
+        reason: { type: string, minLength: 3, maxLength: 500 }
+    ClassReport:
+      type: object
+      required: [classId, attendanceThreshold, totalSessions, students, belowThreshold]
+      properties:
+        classId: { type: string }
+        attendanceThreshold: { type: number }
+        totalSessions: { type: integer }
+        students:
+          type: array
+          items: { $ref: "#/components/schemas/StudentAttendanceSummary" }
+        belowThreshold:
+          type: array
+          items: { $ref: "#/components/schemas/StudentAttendanceSummary" }
+    StudentAttendanceSummary:
+      type: object
+      required: [fullName, indexNumber, attended, total, percentage]
+      properties:
+        fullName: { type: string }
+        indexNumber: { type: string }
+        attended: { type: integer }
+        total: { type: integer }
+        percentage: { type: number }
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+

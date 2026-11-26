@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "isolatedModules": true,
+    "lib": ["es2022", "DOM", "DOM.Iterable"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmitOnError": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": false,
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "strictBindCallApply": false,
+    "strictPropertyInitialization": false,
+    "useUnknownInCatchVariables": true,
+    "skipLibCheck": true,
+    "target": "es2022",
+    "types": ["node", "vite/client"],
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@workspace/db": ["./lib/db/src/index.ts"],
+      "@workspace/db/*": ["./lib/db/src/*"],
+      "@workspace/api-zod": ["./lib/api-zod/src/index.ts"],
+      "@workspace/api-client-react": ["./src/api-client-react/index.ts"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "server.ts",
+    "artifacts/api-server/src/**/*.ts",
+    "lib/db/src/**/*.ts",
+    "lib/api-zod/src/**/*.ts"
+  ],
+  "exclude": [
+    "src/components/ui/aspect-ratio.tsx",
+    "src/components/ui/calendar.tsx",
+    "src/components/ui/carousel.tsx",
+    "src/components/ui/chart.tsx",
+    "src/components/ui/collapsible.tsx",
+    "src/components/ui/context-menu.tsx",
+    "src/components/ui/hover-card.tsx",
+    "src/components/ui/menubar.tsx",
+    "src/components/ui/navigation-menu.tsx",
+    "src/components/ui/resizable.tsx"
+  ]
+}

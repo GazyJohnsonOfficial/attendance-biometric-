@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Class Attendance"
+description = "A lecturer attendance workspace for building classes, reviewing roster matches, opening attendance sessions, resolving flagged marks, and tracking course attendance. The first pilot keeps biometric checks clearly marked as unverified until real consent, device security, and matching controls are implemented."
+version = "1.0.0"
+id = "artifacts/attendance"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18763
+
+[services.development]
+run = "pnpm --filter @workspace/attendance run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/attendance", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/attendance/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18763"
+BASE_PATH = "/"
