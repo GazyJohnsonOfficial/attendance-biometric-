@@ -174,3 +174,64 @@ export function getAdminDepartmentScope(req: Request): string[] | null {
   }
   return null;
 }
+
+const EPHEMERAL_CODE_SECRET = randomBytes(32).toString("hex");
+
+export function getSessionCodeSecret(): string {
+  return process.env.SESSION_SECRET?.trim() || EPHEMERAL_CODE_SECRET;
+}
+
+export function encodeBase32(bytes: Buffer): string {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let output = "";
+  let buffer = 0;
+  let bits = 0;
+
+  for (const byte of bytes) {
+    buffer = (buffer << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      output += alphabet[(buffer >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) {
+    output += alphabet[(buffer << (5 - bits)) & 31];
+  }
+  return output;
+}
+
+export function getValidSessionCodes(
+  sessionId: string,
+  codeMode: "rotating" | "static",
+  rotateSec = 45,
+): string[] {
+  const secret = getSessionCodeSecret();
+  const rotateMs = (rotateSec || 45) * 1_000;
+  const currentInterval = Math.floor(Date.now() / rotateMs);
+  const validCodes: string[] = [];
+
+  if (codeMode === "static") {
+    const sig = createHmac("sha256", secret).update(`${sessionId}|static`).digest();
+    validCodes.push(encodeBase32(sig).slice(0, 6).toUpperCase());
+  } else {
+    for (const interval of [currentInterval, currentInterval - 1]) {
+      const sig = createHmac("sha256", secret).update(`${sessionId}|${interval}`).digest();
+      validCodes.push(encodeBase32(sig).slice(0, 6).toUpperCase());
+    }
+  }
+  return validCodes;
+}
+
+export function verifySessionCode(
+  sessionId: string,
+  codeMode: "rotating" | "static",
+  rawInput: string,
+  rotateSec = 45,
+): boolean {
+  const cleanInput = rawInput.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+  if (cleanInput.length < 4) return false;
+  const validCodes = getValidSessionCodes(sessionId, codeMode, rotateSec);
+  return validCodes.some((code) => code === cleanInput);
+}
+

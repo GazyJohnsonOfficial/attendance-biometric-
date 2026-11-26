@@ -200,7 +200,7 @@ export interface StoredAuthSession {
   userId: string;
   email: string;
   fullName: string;
-  role: "lecturer" | "super_admin" | "department_admin";
+  role: "lecturer" | "super_admin" | "department_admin" | "student";
   departments?: string[];
   expiresAt: number;
 }

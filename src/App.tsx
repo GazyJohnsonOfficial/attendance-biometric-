@@ -43,6 +43,7 @@ import { ReviewQueuePanel } from '@/components/lecturer/ReviewQueuePanel';
 import { SessionActivityTimeline } from '@/components/lecturer/SessionActivityTimeline';
 import { SessionProgressChart } from '@/components/lecturer/SessionProgressChart';
 import { StudentCheckinPage } from '@/components/student/StudentCheckinPage';
+import { StudentMobileSimulator } from '@/components/student/StudentMobileSimulator';
 import { AdminLoginPage } from '@/components/admin/AdminLoginPage';
 import {
   AdminAuthProvider,
@@ -647,6 +648,11 @@ function SignInPage() {
                 Create your account
               </Link>
             </p>
+            <div className="pt-1 text-center">
+              <Link href="/student" className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:underline dark:text-emerald-400" data-testid="link-signin-student-app">
+                <Smartphone size={13} /> Open Student Mobile App (12 Screens Simulator)
+              </Link>
+            </div>
           </div>
         )}
       </div>
@@ -891,6 +897,10 @@ function Home() {
           <span className="font-bold tracking-tight">Attendance desk</span>
         </Link>
         <div className="flex items-center gap-2">
+          <Link href="/student" className="btn btn-outline !text-xs flex items-center gap-1.5 border-emerald-600/30 text-emerald-700 dark:text-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/30 hover:bg-emerald-100/50" data-testid="link-student-app">
+            <Smartphone size={14} className="text-emerald-600 dark:text-emerald-400" />
+            <span>Student Mobile App</span>
+          </Link>
           <Link href="/admin/login" className="btn btn-outline !text-xs" data-testid="link-admin-login">Admin Portal</Link>
           <Link href="/sign-in" className="btn btn-outline" data-testid="link-sign-in">Sign in</Link>
           <Link href="/sign-up" className="btn btn-primary" data-testid="link-sign-up">Create account <ArrowRight size={15} /></Link>
@@ -910,6 +920,9 @@ function Home() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/sign-up" className="btn btn-primary px-5 py-3" data-testid="link-get-started">Get started <ArrowRight size={16} /></Link>
             <Link href="/sign-in" className="btn btn-outline px-5 py-3" data-testid="link-home-sign-in">I already have an account</Link>
+            <Link href="/student" className="btn btn-outline px-5 py-3 flex items-center gap-2 border-emerald-600/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40" data-testid="link-hero-student-app">
+              <Smartphone size={16} className="text-emerald-600" /> Open Student App (Simulator)
+            </Link>
           </div>
           <div className="mt-9 flex items-center gap-4 text-xs text-muted-foreground">
             <ShieldCheck size={17} className="text-primary" /> Clear decisions. Accountable records. Lecturer-led review.
@@ -4213,6 +4226,8 @@ function Router() {
         <Route path="/sign-in/*?" component={SignInPage} />
         <Route path="/sign-up/*?" component={SignUpPage} />
         <Route path="/check-in" component={StudentCheckinPage} />
+        <Route path="/student" component={StudentMobileSimulator} />
+        <Route path="/student-app" component={StudentMobileSimulator} />
         <Route path="/app"><Guard><Dashboard /></Guard></Route>
         <Route path="/classes"><Guard><ClassesPage /></Guard></Route>
         <Route path="/classes/:classId">{(params: { classId?: string } | undefined) => <Guard><ClassPage classId={params ? (params.classId ?? '') : ''} /></Guard>}</Route>

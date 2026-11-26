@@ -45,8 +45,7 @@ import {
   writeAttendanceAudit,
 } from "../../lib/attendance";
 import { hasDatabaseConnection, memoryStore } from "../../lib/attendanceStore";
-
-const FALLBACK_SESSION_SECRET = randomBytes(32).toString("hex");
+import { encodeBase32, getSessionCodeSecret } from "../../lib/authUtils";
 
 const router: IRouter = Router();
 
@@ -348,7 +347,7 @@ router.get(
       return;
     }
 
-    const secret = process.env.SESSION_SECRET || FALLBACK_SESSION_SECRET;
+    const secret = getSessionCodeSecret();
     const rotateSec = memoryStore.adminSettings.rotatingCodeSeconds || 45;
     const rotateMs = rotateSec * 1_000;
     const currentInterval = Math.floor(Date.now() / rotateMs);
@@ -486,7 +485,7 @@ router.post(
       return;
     }
 
-    const secret = process.env.SESSION_SECRET || FALLBACK_SESSION_SECRET;
+    const secret = getSessionCodeSecret();
     const rotateMs = (memoryStore.adminSettings.rotatingCodeSeconds || 45) * 1_000;
     const currentInterval = Math.floor(Date.now() / rotateMs);
     const cleanInputCode = parsed.data.code.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
@@ -2033,23 +2032,3 @@ router.get(
 );
 
 export default router;
-
-function encodeBase32(bytes: Buffer): string {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  let output = "";
-  let buffer = 0;
-  let bits = 0;
-
-  for (const byte of bytes) {
-    buffer = (buffer << 8) | byte;
-    bits += 8;
-    while (bits >= 5) {
-      output += alphabet[(buffer >>> (bits - 5)) & 31];
-      bits -= 5;
-    }
-  }
-  if (bits > 0) {
-    output += alphabet[(buffer << (5 - bits)) & 31];
-  }
-  return output;
-}
